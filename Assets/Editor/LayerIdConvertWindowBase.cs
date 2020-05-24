@@ -371,7 +371,7 @@ public abstract class LayerIdConvertWindowBase : EditorWindow
 						continue;
 					}
 					result.Add(string.Format(
-						"{0} (Camera Culling Mask {1} => {2}) Leave Old layer = {3}",
+						"{0} (Camera Culling Mask {1} => {2}), Leave Old layer = {3}",
 						layerName,
 						convertPattern.oldLayerId,
 						convertPattern.newLayerId,

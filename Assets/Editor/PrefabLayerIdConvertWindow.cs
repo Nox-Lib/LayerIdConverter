@@ -52,12 +52,6 @@ public class PrefabLayerIdConvertWindow : LayerIdConvertWindowBase
 
 		List<string> results = new List<string>();
 		if (isChangeChildren) {
-			List<string> result = this.ChangeLayer(prefabObject.name, prefabObject, convertSettings);
-			if (result != null && result.Count > 0) {
-				results.AddRange(result);
-			}
-		}
-		else {
 			Utility.ScanningChildren(
 				prefabObject,
 				(child, layerName) => {
@@ -68,10 +62,16 @@ public class PrefabLayerIdConvertWindow : LayerIdConvertWindowBase
 				}
 			);
 		}
+		else {
+			List<string> result = this.ChangeLayer(prefabObject.name, prefabObject, convertSettings);
+			if (result != null && result.Count > 0) {
+				results.AddRange(result);
+			}
+		}
 
 		if (results.Count > 0) {
 			Debug.Log(string.Format(
-				"[PrefabLayerIdConverter] {0} :Change Children = {1}\n{2}",
+				"[PrefabLayerIdConverter] {0}, Change Children = {1}\n{2}",
 				path,
 				isChangeChildren,
 				string.Join("\n", results)
