@@ -9,7 +9,7 @@ public class PrefabLayerIdConvertWindow : LayerIdConvertWindowBase
 	protected override string AssetType => "Prefab";
 
 	[MenuItem("Tools/LayerIdConverter/Prefab")]
-	private static void OpenPrefab()
+	private static void Open()
 	{
 		PrefabLayerIdConvertWindow window = GetWindow<PrefabLayerIdConvertWindow>();
 		window.titleContent = new GUIContent("PrefabLayerIdConverter");

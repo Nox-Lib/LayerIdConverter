@@ -10,7 +10,7 @@ public class SceneLayerIdConvertWindow : LayerIdConvertWindowBase
 	protected override string AssetType => "Scene";
 
 	[MenuItem("Tools/LayerIdConverter/Scene")]
-	private static void OpenScene()
+	private static void Open()
 	{
 		SceneLayerIdConvertWindow window = GetWindow<SceneLayerIdConvertWindow>();
 		window.titleContent = new GUIContent("SceneLayerIdConverter");
