@@ -13,8 +13,7 @@ namespace ConvertLayerId
 		protected abstract string AssetType { get; }
 		protected abstract void Execute(List<string> pathList, ConvertData convertSettings);
 
-		protected enum ProcessingMode : int
-		{
+		protected enum ProcessingMode : int {
 			Normal,
 			CameraOnly
 		}
