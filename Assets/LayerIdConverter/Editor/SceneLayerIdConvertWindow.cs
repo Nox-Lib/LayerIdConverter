@@ -27,8 +27,9 @@ namespace ConvertLayerId
 
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
+				string assetPath = path;
 				try {
-					tasks.Add(new GeneralEditorIndicator.Task(() => { this.ChangeLayer(path, convertSettings, isChangeChildren); }, path));
+					tasks.Add(new GeneralEditorIndicator.Task(() => { this.ChangeLayer(assetPath, convertSettings, isChangeChildren); }, assetPath));
 				}
 				catch {
 					EditorSceneManager.OpenScene(currentScenePath);
@@ -48,10 +49,10 @@ namespace ConvertLayerId
 		}
 
 
-		private void ChangeLayer(string path, ConvertData convertSettings, bool isChangeChildren)
+		private void ChangeLayer(string assetPath, ConvertData convertSettings, bool isChangeChildren)
 		{
-			EditorSceneManager.OpenScene(path);
-			Scene scene = SceneManager.GetSceneByPath(path);
+			EditorSceneManager.OpenScene(assetPath);
+			Scene scene = SceneManager.GetSceneByPath(assetPath);
 			List<GameObject> gameObjects = scene.GetRootGameObjects().ToList();
 			List<string> results = new List<string>();
 
@@ -84,7 +85,7 @@ namespace ConvertLayerId
 			if (results.Count > 0) {
 				Debug.Log(string.Format(
 					"[SceneLayerIdConverter] {0}, Change Children = {1}\n{2}",
-					path,
+					assetPath,
 					isChangeChildren,
 					string.Join("\n", results)
 				));

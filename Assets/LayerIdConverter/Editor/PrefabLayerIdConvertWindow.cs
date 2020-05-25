@@ -23,9 +23,10 @@ namespace ConvertLayerId
 		{
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
+				string assetPath = path;
 				tasks.Add(new GeneralEditorIndicator.Task(
-					() => { this.ChangeLayer(path, convertSettings, isChangeChildren); },
-					path
+					() => { this.ChangeLayer(assetPath, convertSettings, isChangeChildren); },
+					assetPath
 				));
 			}
 			GeneralEditorIndicator.Show(
@@ -39,15 +40,9 @@ namespace ConvertLayerId
 		}
 
 
-		private void ChangeLayer(string path, ConvertData convertSettings, bool isChangeChildren)
+		private void ChangeLayer(string assetPath, ConvertData convertSettings, bool isChangeChildren)
 		{
-			int startIndex = path.IndexOf("Resources/", 0, StringComparison.Ordinal);
-			string prefabPath = path;
-			prefabPath = prefabPath.Substring(startIndex, prefabPath.Length - startIndex);
-			prefabPath = prefabPath.Replace("Resources/", string.Empty);
-			prefabPath = prefabPath.Replace(Path.GetExtension(prefabPath), string.Empty);
-
-			GameObject prefabObject = Resources.Load<GameObject>(prefabPath);
+			GameObject prefabObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
 			if (prefabObject == null) {
 				return;
 			}
@@ -74,7 +69,7 @@ namespace ConvertLayerId
 			if (results.Count > 0) {
 				Debug.Log(string.Format(
 					"[PrefabLayerIdConverter] {0}, Change Children = {1}\n{2}",
-					path,
+					assetPath,
 					isChangeChildren,
 					string.Join("\n", results)
 				));
