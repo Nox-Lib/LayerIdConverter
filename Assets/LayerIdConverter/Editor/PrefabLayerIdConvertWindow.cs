@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
 
 namespace ConvertLayerId
@@ -17,16 +18,29 @@ namespace ConvertLayerId
 		}
 
 
-		protected override void Execute(List<string> pathList, ConvertData convertSettings, bool isChangeChildren)
+		protected override void Execute(List<string> pathList, ConvertData convertSettings)
 		{
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
 				string assetPath = path;
 				tasks.Add(new GeneralEditorIndicator.Task(
-					() => { this.ChangeLayer(assetPath, convertSettings, isChangeChildren); },
+					() => {
+						try {
+							this.ChangeLayer(assetPath, convertSettings);
+						}
+						catch (Exception e) {
+							if (convertSettings.isStopConvertOnError) {
+								throw;
+							}
+							else {
+								Debug.LogException(e);
+							}
+						}
+					},
 					assetPath
 				));
 			}
+
 			GeneralEditorIndicator.Show(
 				"PrefabLayerIdConverter",
 				tasks,
@@ -38,7 +52,7 @@ namespace ConvertLayerId
 		}
 
 
-		private void ChangeLayer(string assetPath, ConvertData convertSettings, bool isChangeChildren)
+		private void ChangeLayer(string assetPath, ConvertData convertSettings)
 		{
 			GameObject prefabObject = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
 			if (prefabObject == null) {
@@ -46,7 +60,7 @@ namespace ConvertLayerId
 			}
 
 			List<string> results = new List<string>();
-			if (isChangeChildren) {
+			if (convertSettings.isChangeChildren) {
 				Utility.ScanningChildren(
 					prefabObject,
 					(child, layerName) => {
@@ -68,7 +82,7 @@ namespace ConvertLayerId
 				Debug.Log(string.Format(
 					"[PrefabLayerIdConverter] {0}, Change Children = {1}\n{2}",
 					assetPath,
-					isChangeChildren,
+					convertSettings.isChangeChildren,
 					string.Join("\n", results)
 				));
 				EditorUtility.SetDirty(prefabObject);

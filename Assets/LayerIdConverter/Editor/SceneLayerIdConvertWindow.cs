@@ -2,6 +2,7 @@
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +21,7 @@ namespace ConvertLayerId
 		}
 
 
-		protected override void Execute(List<string> pathList, ConvertData convertSettings, bool isChangeChildren)
+		protected override void Execute(List<string> pathList, ConvertData convertSettings)
 		{
 			EditorSceneManager.SaveOpenScenes();
 			string currentScenePath = SceneManager.GetActiveScene().path;
@@ -28,13 +29,23 @@ namespace ConvertLayerId
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
 				string assetPath = path;
-				try {
-					tasks.Add(new GeneralEditorIndicator.Task(() => { this.ChangeLayer(assetPath, convertSettings, isChangeChildren); }, assetPath));
-				}
-				catch {
-					EditorSceneManager.OpenScene(currentScenePath);
-					throw;
-				}
+				tasks.Add(new GeneralEditorIndicator.Task(
+					() => {
+						try {
+							this.ChangeLayer(assetPath, convertSettings);
+						}
+						catch (Exception e) {
+							if (convertSettings.isStopConvertOnError) {
+								EditorSceneManager.OpenScene(currentScenePath);
+								throw;
+							}
+							else {
+								Debug.LogException(e);
+							}
+						}
+					},
+					assetPath
+				));
 			}
 
 			GeneralEditorIndicator.Show(
@@ -49,7 +60,7 @@ namespace ConvertLayerId
 		}
 
 
-		private void ChangeLayer(string assetPath, ConvertData convertSettings, bool isChangeChildren)
+		private void ChangeLayer(string assetPath, ConvertData convertSettings)
 		{
 			EditorSceneManager.OpenScene(assetPath);
 			Scene scene = SceneManager.GetSceneByPath(assetPath);
@@ -58,7 +69,7 @@ namespace ConvertLayerId
 
 			foreach (GameObject target in gameObjects) {
 				bool isChanged = false;
-				if (isChangeChildren) {
+				if (convertSettings.isChangeChildren) {
 					Utility.ScanningChildren(
 						target,
 						(child, layerName) => {
@@ -86,7 +97,7 @@ namespace ConvertLayerId
 				Debug.Log(string.Format(
 					"[SceneLayerIdConverter] {0}, Change Children = {1}\n{2}",
 					assetPath,
-					isChangeChildren,
+					convertSettings.isChangeChildren,
 					string.Join("\n", results)
 				));
 			}

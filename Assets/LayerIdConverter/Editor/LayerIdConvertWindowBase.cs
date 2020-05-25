@@ -11,7 +11,7 @@ namespace ConvertLayerId
 	public abstract class LayerIdConvertWindowBase : EditorWindow
 	{
 		protected abstract string AssetType { get; }
-		protected abstract void Execute(List<string> pathList, ConvertData convertSettings, bool isChangeChildren);
+		protected abstract void Execute(List<string> pathList, ConvertData convertSettings);
 
 		protected enum ProcessingMode : int
 		{
@@ -64,6 +64,8 @@ namespace ConvertLayerId
 
 			public ProcessingMode processingMode = ProcessingMode.Normal;
 			public List<Pattern> patterns = new List<Pattern>();
+			public bool isChangeChildren = true;
+			public bool isStopConvertOnError = true;
 			public CameraOption cameraOption = new CameraOption();
 
 			public ConvertData Clone()
@@ -71,6 +73,8 @@ namespace ConvertLayerId
 				return new ConvertData {
 					processingMode = this.processingMode,
 					patterns = this.patterns.Select(x => x.Clone()).ToList(),
+					isChangeChildren = this.isChangeChildren,
+					isStopConvertOnError = this.isStopConvertOnError,
 					cameraOption = this.cameraOption.Clone()
 				};
 			}
@@ -84,7 +88,6 @@ namespace ConvertLayerId
 		private string matchPatternError;
 		private string ignorePattern;
 		private string ignorePatternError;
-		private bool isChangeChildren = true;
 		private ConvertData convertSettings;
 		private ReorderableList drawConvertPatterns;
 		private Vector2 scrollPosition;
@@ -226,23 +229,28 @@ namespace ConvertLayerId
 
 			GUI.enabled = this.convertSettings.processingMode == ProcessingMode.Normal;
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Change Children", GUILayout.Width(120f));
-			this.isChangeChildren = EditorGUILayout.Toggle(this.isChangeChildren);
+			EditorGUILayout.LabelField("Change Children", GUILayout.Width(130f));
+			this.convertSettings.isChangeChildren = EditorGUILayout.Toggle(this.convertSettings.isChangeChildren);
 			EditorGUILayout.EndHorizontal();
 			GUI.enabled = true;
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Stop Convert On Error", GUILayout.Width(130f));
+			this.convertSettings.isStopConvertOnError = EditorGUILayout.Toggle(this.convertSettings.isStopConvertOnError);
+			EditorGUILayout.EndHorizontal();
 
 			if (this.convertSettings.processingMode == ProcessingMode.CameraOnly) {
 				this.convertSettings.cameraOption.isEnabled = true;
 			}
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Camera Culling Mask", GUILayout.Width(120f));
+			EditorGUILayout.LabelField("Camera Culling Mask", GUILayout.Width(130f));
 			this.convertSettings.cameraOption.isEnabled = EditorGUILayout.Toggle(this.convertSettings.cameraOption.isEnabled);
 			EditorGUILayout.EndHorizontal();
 
 			GUI.enabled = this.convertSettings.cameraOption.isEnabled;
 			EditorGUI.indentLevel++;
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Leave Old Layer", GUILayout.Width(120f));
+			EditorGUILayout.LabelField("Leave Old Layer Id", GUILayout.Width(130f));
 			this.convertSettings.cameraOption.isLeaveOldCullingMask = EditorGUILayout.Toggle(this.convertSettings.cameraOption.isLeaveOldCullingMask);
 			EditorGUILayout.EndHorizontal();
 			EditorGUI.indentLevel--;
@@ -340,7 +348,7 @@ namespace ConvertLayerId
 				"Cancel"
 			);
 			if (isExecute) {
-				this.Execute(new List<string>(this.targetPathList), this.convertSettings.Clone(), this.isChangeChildren);
+				this.Execute(new List<string>(this.targetPathList), this.convertSettings.Clone());
 			}
 		}
 
