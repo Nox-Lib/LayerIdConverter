@@ -16,11 +16,9 @@ public class SelectionContentPopup : PopupWindowContent
 
 	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect) : this(contents, onSelect, DEFAULT_WINDOW_WIDTH, null, 0f) {}
 	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, float windowWidth) : this(contents, onSelect, windowWidth, null, 0f) {}
-	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, GUIStyle guiStyle) : this(contents, onSelect, DEFAULT_WINDOW_WIDTH, guiStyle, 0f) {}
-	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, float windowWidth, GUIStyle guiStyle) : this(contents, onSelect, windowWidth, guiStyle, 0f) {}
-	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, GUIStyle guiStyle, float spacingX) : this(contents, onSelect, DEFAULT_WINDOW_WIDTH, guiStyle, spacingX) {}
+	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, GUIStyle guiStyle, float spacingX = 0f) : this(contents, onSelect, DEFAULT_WINDOW_WIDTH, guiStyle, spacingX) {}
 
-	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, float windowWidth, GUIStyle guiStyle, float spacingX)
+	public SelectionContentPopup(IEnumerable<string> contents, Action<int> onSelect, float windowWidth, GUIStyle guiStyle, float spacingX = 0f)
 	{
 		this.contents = contents;
 		this.onSelect = onSelect;
