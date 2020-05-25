@@ -54,7 +54,7 @@ namespace ConvertLayerId
 		{
 			if (this.cursor < this.taskList.Count) {
 				string progressTest = string.Format(" ({0}/{1})", this.cursor, this.taskList.Count);
-				string title = string.IsNullOrEmpty(this.indicatorTitle) ? progressTest : this.indicatorTitle + progressTest;
+				string title = string.IsNullOrEmpty(this.indicatorTitle) ? progressTest : this.indicatorTitle + " " + progressTest;
 				EditorUtility.DisplayProgressBar(title, this.taskList[this.cursor].Description, (float)this.cursor / this.taskList.Count);
 			}
 			else {
