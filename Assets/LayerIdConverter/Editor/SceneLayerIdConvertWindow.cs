@@ -21,10 +21,12 @@ namespace ConvertLayerId
 		}
 
 
+		private string currentScenePath;
+
 		protected override void Execute(List<string> pathList, ConvertData convertSettings)
 		{
 			EditorSceneManager.SaveOpenScenes();
-			string currentScenePath = SceneManager.GetActiveScene().path;
+			this.currentScenePath = SceneManager.GetActiveScene().path;
 
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
@@ -36,12 +38,10 @@ namespace ConvertLayerId
 						}
 						catch (Exception e) {
 							if (convertSettings.isStopConvertOnError) {
-								EditorSceneManager.OpenScene(currentScenePath);
+								EditorSceneManager.OpenScene(this.currentScenePath);
 								throw;
 							}
-							else {
-								Debug.LogException(e);
-							}
+							Debug.LogException(e);
 						}
 					},
 					assetPath
@@ -51,11 +51,7 @@ namespace ConvertLayerId
 			GeneralEditorIndicator.Show(
 				"SceneLayerIdConverter",
 				tasks,
-				() => {
-					EditorSceneManager.OpenScene(currentScenePath);
-					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
-				}
+				() => { EditorSceneManager.OpenScene(this.currentScenePath); }
 			);
 		}
 
@@ -104,6 +100,7 @@ namespace ConvertLayerId
 
 			EditorSceneManager.MarkSceneDirty(scene);
 			EditorSceneManager.SaveScene(scene);
+			AssetDatabase.SaveAssets();
 		}
 	}
 }

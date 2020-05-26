@@ -370,18 +370,18 @@ namespace ConvertLayerId
 					foreach (ConvertData.Pattern convertPattern in convertSettings.patterns) {
 						int beforeCullingMask = camera.cullingMask;
 						int oldMask = 1 << convertPattern.oldLayerId;
-						if ((camera.cullingMask & oldMask) >= 1 && !convertSettings.cameraOption.isLeaveOldCullingMask) {
-							camera.cullingMask &= ~oldMask;
-						}
 						int newMask = 1 << convertPattern.newLayerId;
-						if ((camera.cullingMask & newMask) == 0) {
+						if ((camera.cullingMask & oldMask) >= 1) {
 							camera.cullingMask |= newMask;
+							if (!convertSettings.cameraOption.isLeaveOldCullingMask) {
+								camera.cullingMask &= ~oldMask;
+							}
 						}
 						if (beforeCullingMask == camera.cullingMask) {
 							continue;
 						}
 						result.Add(string.Format(
-							"{0} (Camera Culling Mask {1} => {2}), Leave Old layer = {3}",
+							"{0} (Camera Culling Mask {1} => {2}), Leave Old layer Id = {3}",
 							layerName,
 							convertPattern.oldLayerId,
 							convertPattern.newLayerId,

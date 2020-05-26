@@ -32,23 +32,14 @@ namespace ConvertLayerId
 							if (convertSettings.isStopConvertOnError) {
 								throw;
 							}
-							else {
-								Debug.LogException(e);
-							}
+							Debug.LogException(e);
 						}
 					},
 					assetPath
 				));
 			}
 
-			GeneralEditorIndicator.Show(
-				"PrefabLayerIdConverter",
-				tasks,
-				() => {
-					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
-				}
-			);
+			GeneralEditorIndicator.Show("PrefabLayerIdConverter", tasks, () => {});
 		}
 
 
@@ -86,6 +77,7 @@ namespace ConvertLayerId
 					string.Join("\n", results)
 				));
 				EditorUtility.SetDirty(prefabObject);
+				AssetDatabase.SaveAssets();
 			}
 		}
 	}
