@@ -319,7 +319,7 @@ namespace ConvertLayerId
 			List<ConvertData.Pattern> convertPatterns = this.convertSettings.patterns;
 
 			if (!string.IsNullOrEmpty(this.matchPatternError) || !string.IsNullOrEmpty(this.ignorePatternError)) {
-				EditorUtility.DisplayDialog("Error", "絞り込みのマッチパターンにエラーがあるため実行できません。", "OK");
+				EditorUtility.DisplayDialog("Error", "絞り込みのパターンにエラーがあるため実行できません。", "OK");
 				return;
 			}
 			if (convertPatterns.Count <= 0) {
