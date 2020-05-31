@@ -24,7 +24,7 @@ Unityメニューの「Tools > LayerIdConverter」から、「Prefab」もしく
 |Ignore Pattern|パスの無視パターン。正規表現を使用できます。|
 |Layer Convert Patterns|レイヤーIdの変換パターンの設定。<br>右下の+-ボタンよりパターンの追加、削除ができます。<br>パターンを削除したい場合、削除するパターンを選択した状態で-ボタンを押下します。|
 |Change Children|ONにすると、子オブジェクトも処理されます。|
-|Stop Convert On Error|ONにすると、処理中に致命的なエラーが発生したい場合に処理を中断します。|
+|Stop Convert On Error|ONにすると、処理中に致命的なエラーが発生した場合に処理を中断します。|
 |Camera Culling Mask|ONにすると、レイヤーIdの変換パターンに従ってカメラのCullingMaskを変換します。<br>CullingMaskが「Everything」のカメラは処理されません。|
 |Leave Old Layer Id|ONにすると、カメラのCullingMaskの変換で変換元のレイヤーを残します。|
 |Targets|レイヤーId変換の処理対象のアセット一覧です。<br>一致パターンや無視パターンが指定されていない場合、プロジェクト内の全てのプレハブ（もしくはシーン）が対象となります。|
