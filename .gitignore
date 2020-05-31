@@ -6,7 +6,10 @@ develop/
 [Tt]emp/
 [Oo]bj/
 UnityGenerated/
-  
+Logs/
+Packages/
+
+
 # ----[ Visual Studio / MonoDevelop generated ]------- #
 .vs/
 ExportedObj/
