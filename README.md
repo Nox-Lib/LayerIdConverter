@@ -26,7 +26,7 @@ Unityメニューの「Tools > LayerIdConverter」から、「Prefab」もしく
 |Change Children|ONにすると、子オブジェクトも処理されます。|
 |Stop Convert On Error|ONにすると、処理中に致命的なエラーが発生した場合に処理を中断します。|
 |Camera Culling Mask|ONにすると、レイヤーIdの変換パターンに従ってカメラのCullingMaskを変換します。<br>CullingMaskが「Everything」のカメラは処理されません。|
-|Leave Old Layer Id|ONにすると、カメラのCullingMaskの変換で変換元のレイヤーを残します。|
+|Leave Old Layer Id|ONにすると、カメラのCullingMaskの変換時に変換元のレイヤーを残します。|
 |Targets|レイヤーId変換の処理対象のアセット一覧です。<br>一致パターンや無視パターンが指定されていない場合、プロジェクト内の全てのプレハブ（もしくはシーン）が対象となります。|
 |Execute|設定された内容に従って処理を実行します。|
 
