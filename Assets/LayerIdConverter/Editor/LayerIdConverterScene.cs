@@ -8,22 +8,13 @@ using System.Linq;
 
 namespace ConvertLayerId
 {
-	public class SceneLayerIdConvertWindow : LayerIdConvertWindowBase
+	public class LayerIdConverterScene : LayerIdConverterBase
 	{
-		protected override string AssetType => "Scene";
-
-		[MenuItem("Tools/LayerIdConverter/Scene")]
-		private static void Open()
-		{
-			SceneLayerIdConvertWindow window = GetWindow<SceneLayerIdConvertWindow>();
-			window.titleContent = new GUIContent("SceneLayerIdConverter");
-			window.minSize = new Vector2(300f, 300f);
-		}
-
+		public override string AssetType => "Scene";
 
 		private string currentScenePath;
 
-		protected override void Execute(List<string> pathList, ConvertData convertSettings)
+		public override void Execute(List<string> pathList, ConvertData convertSettings)
 		{
 			EditorSceneManager.SaveOpenScenes();
 			this.currentScenePath = SceneManager.GetActiveScene().path;
@@ -47,7 +38,7 @@ namespace ConvertLayerId
 					assetPath
 				));
 			}
-
+		
 			GeneralEditorIndicator.Show(
 				"SceneLayerIdConverter",
 				tasks,

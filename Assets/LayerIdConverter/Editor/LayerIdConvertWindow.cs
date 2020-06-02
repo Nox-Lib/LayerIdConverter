@@ -8,79 +8,24 @@ using System.Linq;
 
 namespace ConvertLayerId
 {
-	public abstract class LayerIdConvertWindowBase : EditorWindow
+	public class LayerIdConvertWindow : EditorWindow
 	{
-		protected abstract string AssetType { get; }
-		protected abstract void Execute(List<string> pathList, ConvertData convertSettings);
-
-		protected enum ProcessingMode : int {
-			Normal,
-			CameraOnly
-		}
-
-
-		[Serializable]
-		protected class ConvertData
+		[MenuItem("Tools/LayerIdConverter")]
+		private static void Open()
 		{
-			[Serializable]
-			public class Pattern
-			{
-				public int oldLayerId;
-				public int newLayerId;
-
-				public bool IsValid {
-					get {
-						bool result = true;
-						result &= this.oldLayerId >= 0 && this.oldLayerId <= 31;
-						result &= this.newLayerId >= 0 && this.newLayerId <= 31;
-						return result;
-					}
-				}
-
-				public Pattern Clone()
-				{
-					return new Pattern {
-						oldLayerId = this.oldLayerId,
-						newLayerId = this.newLayerId
-					};
-				}
-			}
-
-			[Serializable]
-			public class CameraOption
-			{
-				public bool isEnabled;
-				public bool isLeaveOldCullingMask;
-
-				public CameraOption Clone()
-				{
-					return new CameraOption {
-						isEnabled = this.isEnabled,
-						isLeaveOldCullingMask = this.isLeaveOldCullingMask
-					};
-				}
-			}
-
-			public ProcessingMode processingMode = ProcessingMode.Normal;
-			public List<Pattern> patterns = new List<Pattern>();
-			public bool isChangeChildren = true;
-			public bool isStopConvertOnError = true;
-			public CameraOption cameraOption = new CameraOption();
-
-			public ConvertData Clone()
-			{
-				return new ConvertData {
-					processingMode = this.processingMode,
-					patterns = this.patterns.Select(x => x.Clone()).ToList(),
-					isChangeChildren = this.isChangeChildren,
-					isStopConvertOnError = this.isStopConvertOnError,
-					cameraOption = this.cameraOption.Clone()
-				};
-			}
+			LayerIdConvertWindow window = GetWindow<LayerIdConvertWindow>();
+			window.titleContent = new GUIContent("LayerIdConverter");
+			window.minSize = new Vector2(300f, 300f);
 		}
 
+
+		private const int TARGET_SCENE	= 1;
+		private const int TARGET_PREFAB	= 1 << 1;
+
+		private List<LayerIdConverterBase> converters;
 
 		private Dictionary<int, string> layerDefines;
+		private int targetFlags;
 		private List<string> allPathList;
 		private List<string> targetPathList;
 		private string matchPattern;
@@ -94,11 +39,12 @@ namespace ConvertLayerId
 
 		private void OnEnable()
 		{
-			this.allPathList = AssetDatabase.FindAssets(string.Format("t:{0}", this.AssetType), new string[] { "Assets" })
-				.Select(AssetDatabase.GUIDToAssetPath)
-				.ToList();
-
 			this.CreateLayerDefines();
+
+			if (this.targetFlags == 0) {
+				this.targetFlags = TARGET_SCENE | TARGET_PREFAB;
+			}
+			this.Filter(true);
 
 			this.convertSettings = this.convertSettings ?? new ConvertData();
 
@@ -191,10 +137,34 @@ namespace ConvertLayerId
 
 		private void OnGUI()
 		{
-			this.Filter();
+			EditorGUILayout.BeginVertical(GUI.skin.box);
+			EditorGUILayout.BeginHorizontal();
+
+			int beforeTargetFlags = this.targetFlags;
+
+			bool isUp = (this.targetFlags & TARGET_SCENE) >= 1;
+			isUp = EditorGUILayout.ToggleLeft("Scene", isUp, GUILayout.Width(60f));
+			this.targetFlags = isUp ? this.targetFlags | TARGET_SCENE : this.targetFlags & ~TARGET_SCENE;
+
+			isUp = (this.targetFlags & TARGET_PREFAB) >= 1;
+			isUp = EditorGUILayout.ToggleLeft("Prefab", isUp, GUILayout.Width(60f));
+			this.targetFlags = isUp ? this.targetFlags | TARGET_PREFAB : this.targetFlags & ~TARGET_PREFAB;
+
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.EndVertical();
+
+			bool isChangeTargets = beforeTargetFlags != this.targetFlags;
+			if (this.targetFlags <= 0) {
+				this.targetFlags = beforeTargetFlags;
+				this.Repaint();
+				return;
+			}
+
+			this.Filter(isChangeTargets);
 
 			EditorGUILayout.BeginVertical(GUI.skin.box);
 
+			GUILayout.Space(2f);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Processing Mode", GUILayout.Width(96f));
 			this.convertSettings.processingMode = (ProcessingMode)EditorGUILayout.EnumPopup(this.convertSettings.processingMode);
@@ -285,8 +255,28 @@ namespace ConvertLayerId
 		}
 
 
-		private void Filter()
+		private void Filter(bool isChangeTargets)
 		{
+			if (isChangeTargets) {
+				this.converters = new List<LayerIdConverterBase>();
+				this.allPathList = new List<string>();
+
+				string[] searchInFolders = { "Assets" };
+
+				if ((this.targetFlags & TARGET_SCENE) >= 1) {
+					LayerIdConverterScene sceneConverter = new LayerIdConverterScene();
+					this.converters.Add(sceneConverter);
+					string filter = string.Format("t:{0}", sceneConverter.AssetType);
+					this.allPathList.AddRange(AssetDatabase.FindAssets(filter, searchInFolders).Select(AssetDatabase.GUIDToAssetPath));
+				}
+				if ((this.targetFlags & TARGET_PREFAB) >= 1) {
+					LayerIdConverterPrefab prefabConverter = new LayerIdConverterPrefab();
+					this.converters.Add(prefabConverter);
+					string filter = string.Format("t:{0}", prefabConverter.AssetType);
+					this.allPathList.AddRange(AssetDatabase.FindAssets(filter, searchInFolders).Select(AssetDatabase.GUIDToAssetPath));
+				}
+			}
+
 			this.targetPathList = new List<string>(this.allPathList);
 
 			this.matchPatternError = string.Empty;
@@ -347,51 +337,10 @@ namespace ConvertLayerId
 				"Cancel"
 			);
 			if (isExecute) {
-				this.Execute(new List<string>(this.targetPathList), this.convertSettings.Clone());
-			}
-		}
-
-
-		protected List<string> ChangeLayer(string layerName, GameObject gameObject, ConvertData convertSettings)
-		{
-			List<string> result = new List<string>();
-
-			if (convertSettings.processingMode == ProcessingMode.Normal) {
-				ConvertData.Pattern convertPattern = convertSettings.patterns.FirstOrDefault(x => gameObject.layer == x.oldLayerId);
-				if (convertPattern != null) {
-					gameObject.layer = convertPattern.newLayerId;
-					EditorUtility.SetDirty(gameObject);
-					result.Add(string.Format("{0} ({1} => {2})", layerName, convertPattern.oldLayerId, convertPattern.newLayerId));
+				foreach (LayerIdConverterBase converter in this.converters) {
+					converter.Execute(new List<string>(this.targetPathList), this.convertSettings.Clone());
 				}
 			}
-			if (convertSettings.cameraOption.isEnabled) {
-				Camera camera = gameObject.GetComponent<Camera>();
-				if (camera != null && camera.cullingMask != -1) {
-					foreach (ConvertData.Pattern convertPattern in convertSettings.patterns) {
-						int beforeCullingMask = camera.cullingMask;
-						int oldMask = 1 << convertPattern.oldLayerId;
-						int newMask = 1 << convertPattern.newLayerId;
-						if ((camera.cullingMask & oldMask) >= 1) {
-							camera.cullingMask |= newMask;
-							if (!convertSettings.cameraOption.isLeaveOldCullingMask) {
-								camera.cullingMask &= ~oldMask;
-							}
-						}
-						if (beforeCullingMask == camera.cullingMask) {
-							continue;
-						}
-						result.Add(string.Format(
-							"{0} (Camera Culling Mask {1} => {2}), Leave Old layer Id = {3}",
-							layerName,
-							convertPattern.oldLayerId,
-							convertPattern.newLayerId,
-							convertSettings.cameraOption.isLeaveOldCullingMask
-						));
-						EditorUtility.SetDirty(camera);
-					}
-				}
-			}
-			return result;
 		}
 	}
 }

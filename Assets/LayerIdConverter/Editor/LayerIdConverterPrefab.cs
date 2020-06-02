@@ -5,20 +5,11 @@ using System.Collections.Generic;
 
 namespace ConvertLayerId
 {
-	public class PrefabLayerIdConvertWindow : LayerIdConvertWindowBase
+	public class LayerIdConverterPrefab : LayerIdConverterBase
 	{
-		protected override string AssetType => "Prefab";
+		public override string AssetType => "Prefab";
 
-		[MenuItem("Tools/LayerIdConverter/Prefab")]
-		private static void Open()
-		{
-			PrefabLayerIdConvertWindow window = GetWindow<PrefabLayerIdConvertWindow>();
-			window.titleContent = new GUIContent("PrefabLayerIdConverter");
-			window.minSize = new Vector2(300f, 300f);
-		}
-
-
-		protected override void Execute(List<string> pathList, ConvertData convertSettings)
+		public override void Execute(List<string> pathList, ConvertData convertSettings)
 		{
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in pathList) {
