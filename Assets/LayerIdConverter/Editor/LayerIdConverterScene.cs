@@ -57,7 +57,7 @@ namespace ConvertLayerId
 			foreach (GameObject target in gameObjects) {
 				bool isChanged = false;
 				if (convertSettings.isChangeChildren) {
-					Utility.ScanningChildren(
+					this.ScanningChildren(
 						target,
 						(child, layerName) => {
 							List<string> result = this.ChangeLayer(layerName, child, convertSettings);

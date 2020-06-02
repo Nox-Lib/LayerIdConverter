@@ -43,7 +43,7 @@ namespace ConvertLayerId
 
 			List<string> results = new List<string>();
 			if (convertSettings.isChangeChildren) {
-				Utility.ScanningChildren(
+				this.ScanningChildren(
 					prefabObject,
 					(child, layerName) => {
 						List<string> result = this.ChangeLayer(layerName, child, convertSettings);

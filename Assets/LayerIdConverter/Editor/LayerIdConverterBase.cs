@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -50,6 +51,21 @@ namespace ConvertLayerId
 				}
 			}
 			return result;
+		}
+
+		protected void ScanningChildren(GameObject parent, Action<GameObject, string> onProcess)
+		{
+			if (parent != null) {
+				ScanningChildren(parent, parent.name, onProcess);
+			}
+		}
+
+		private void ScanningChildren(GameObject parent, string layerName, Action<GameObject, string> onProcess)
+		{
+			onProcess?.Invoke(parent, layerName);
+			foreach (Transform child in parent.transform) {
+				ScanningChildren(child.gameObject, string.Format("{0}/{1}", layerName, child.name), onProcess);
+			}
 		}
 	}
 }
