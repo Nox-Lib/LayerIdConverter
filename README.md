@@ -13,6 +13,7 @@
 
 ## Usage
 Unityメニューの「Tools > LayerIdConverter」押下でウィンドウを開きます。
+<br>
 変換を実行すると、変換結果の詳細がログに出力されます。
 
 #### □機能
@@ -27,7 +28,7 @@ Unityメニューの「Tools > LayerIdConverter」押下でウィンドウを開
 |Change Children|ONにすると、子オブジェクトも処理されます。|
 |Stop Convert On Error|ONにすると、処理中に致命的なエラーが発生した場合に処理を中断します。|
 |Leave Old Camera Culling Mask|ONにすると、カメラのCullingMaskの変換時に変換元のレイヤーを残します。|
-|Targets|レイヤーId変換の処理対象のアセット一覧です。<br>一致パターンや無視パターンが指定されていない場合、プロジェクト内の全てのプレハブ（もしくはシーン）が対象となります。|
+|Targets|レイヤーId変換の処理対象のアセット一覧です。<br>一致パターンや無視パターンが指定されていない場合、プロジェクト内の全てのシーンやプレハブが対象となります。|
 |Execute|設定された内容に従って処理を実行します。|
 
 ※ レイヤーIdの変換パターンに従ってカメラのCullingMaskが変換される時、CullingMaskが「Everything」のカメラは処理されません。
