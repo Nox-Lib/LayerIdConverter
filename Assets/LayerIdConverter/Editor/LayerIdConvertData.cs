@@ -6,7 +6,8 @@ namespace ConvertLayerId
 {
 	public enum ProcessingMode : int {
 		Normal		= 0,
-		CameraOnly	= 1
+		LayerIdOnly	= 1,
+		CameraOnly	= 2
 	}
 
 	[Serializable]
@@ -36,26 +37,29 @@ namespace ConvertLayerId
 			}
 		}
 
-		[Serializable]
-		public class CameraOption
-		{
-			public bool isEnabled;
-			public bool isLeaveOldCullingMask;
-
-			public CameraOption Clone()
-			{
-				return new CameraOption {
-					isEnabled = this.isEnabled,
-					isLeaveOldCullingMask = this.isLeaveOldCullingMask
-				};
-			}
-		}
-
 		public ProcessingMode processingMode = ProcessingMode.Normal;
 		public List<Pattern> patterns = new List<Pattern>();
 		public bool isChangeChildren = true;
 		public bool isStopConvertOnError = true;
-		public CameraOption cameraOption = new CameraOption();
+		public bool isLeaveOldCameraCullingMask;
+
+		public bool IsEnabledLayerId {
+			get {
+				bool result = false;
+				result |= this.processingMode == ProcessingMode.Normal;
+				result |= this.processingMode == ProcessingMode.LayerIdOnly;
+				return result;
+			}
+		}
+
+		public bool IsEnabledCameraCullingMask {
+			get {
+				bool result = false;
+				result |= this.processingMode == ProcessingMode.Normal;
+				result |= this.processingMode == ProcessingMode.CameraOnly;
+				return result;
+			}
+		}
 
 		public ConvertData Clone()
 		{
@@ -64,7 +68,7 @@ namespace ConvertLayerId
 				patterns = this.patterns.Select(x => x.Clone()).ToList(),
 				isChangeChildren = this.isChangeChildren,
 				isStopConvertOnError = this.isStopConvertOnError,
-				cameraOption = this.cameraOption.Clone()
+				isLeaveOldCameraCullingMask = this.isLeaveOldCameraCullingMask
 			};
 		}
 	}

@@ -196,36 +196,26 @@ namespace ConvertLayerId
 			GUILayout.Space(7f);
 			this.drawConvertPatterns.DoLayoutList();
 
-			GUI.enabled = this.convertSettings.processingMode == ProcessingMode.Normal;
+			GUI.enabled = this.convertSettings.IsEnabledLayerId;
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Change Children", GUILayout.Width(130f));
+			EditorGUILayout.LabelField("Change Children", GUILayout.Width(175f));
 			this.convertSettings.isChangeChildren = EditorGUILayout.Toggle(this.convertSettings.isChangeChildren);
 			EditorGUILayout.EndHorizontal();
 			GUI.enabled = true;
 
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Stop Convert On Error", GUILayout.Width(130f));
+			EditorGUILayout.LabelField("Stop Convert On Error", GUILayout.Width(175f));
 			this.convertSettings.isStopConvertOnError = EditorGUILayout.Toggle(this.convertSettings.isStopConvertOnError);
 			EditorGUILayout.EndHorizontal();
 
-			if (this.convertSettings.processingMode == ProcessingMode.CameraOnly) {
-				this.convertSettings.cameraOption.isEnabled = true;
-			}
+			GUI.enabled = this.convertSettings.IsEnabledCameraCullingMask;
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Camera Culling Mask", GUILayout.Width(130f));
-			this.convertSettings.cameraOption.isEnabled = EditorGUILayout.Toggle(this.convertSettings.cameraOption.isEnabled);
+			EditorGUILayout.LabelField("Leave Old Camera Culling Mask", GUILayout.Width(175f));
+			this.convertSettings.isLeaveOldCameraCullingMask = EditorGUILayout.Toggle(this.convertSettings.isLeaveOldCameraCullingMask);
 			EditorGUILayout.EndHorizontal();
-
-			GUI.enabled = this.convertSettings.cameraOption.isEnabled;
-			EditorGUI.indentLevel++;
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Leave Old Layer Id", GUILayout.Width(130f));
-			this.convertSettings.cameraOption.isLeaveOldCullingMask = EditorGUILayout.Toggle(this.convertSettings.cameraOption.isLeaveOldCullingMask);
-			EditorGUILayout.EndHorizontal();
-			EditorGUI.indentLevel--;
 			GUI.enabled = true;
 
-			if (this.convertSettings.cameraOption.isEnabled) {
+			if (this.convertSettings.IsEnabledCameraCullingMask) {
 				EditorGUILayout.HelpBox("Cameras with culling mask 'Everything' will not be processed.", MessageType.Info);
 			}
 
