@@ -10,17 +10,19 @@ namespace ConvertLayerId
 {
 	public class LayerIdConverterScene : LayerIdConverterBase
 	{
-		public override string AssetType => "Scene";
+		public LayerIdConverterScene() : base("Scene") {}
 
 		private string currentScenePath;
 
-		public override void Execute(List<string> pathList, ConvertData convertSettings)
+		public override void Execute(ConvertData convertSettings)
 		{
+			base.Execute(convertSettings);
+
 			EditorSceneManager.SaveOpenScenes();
 			this.currentScenePath = SceneManager.GetActiveScene().path;
 
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
-			foreach (string path in pathList) {
+			foreach (string path in this.TargetPaths) {
 				string assetPath = path;
 				tasks.Add(new GeneralEditorIndicator.Task(
 					() => {
@@ -29,6 +31,7 @@ namespace ConvertLayerId
 						}
 						catch (Exception e) {
 							if (convertSettings.isStopConvertOnError) {
+								this.IsInterruption = true;
 								EditorSceneManager.OpenScene(this.currentScenePath);
 								throw;
 							}
@@ -40,9 +43,12 @@ namespace ConvertLayerId
 			}
 		
 			GeneralEditorIndicator.Show(
-				"SceneLayerIdConverter",
+				"LayerIdConverter - Scene",
 				tasks,
-				() => { EditorSceneManager.OpenScene(this.currentScenePath); }
+				() => {
+					EditorSceneManager.OpenScene(this.currentScenePath);
+					this.IsCompleted = true;
+				}
 			);
 		}
 
@@ -82,7 +88,7 @@ namespace ConvertLayerId
 
 			if (results.Count > 0) {
 				Debug.Log(string.Format(
-					"[SceneLayerIdConverter] {0}, Change Children = {1}\n{2}",
+					"[LayerIdConverter - Scene] {0}, Change Children = {1}\n{2}",
 					assetPath,
 					convertSettings.isChangeChildren,
 					string.Join("\n", results)

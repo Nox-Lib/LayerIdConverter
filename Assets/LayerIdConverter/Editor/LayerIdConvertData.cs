@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -39,8 +39,8 @@ namespace ConvertLayerId
 
 		public ProcessingMode processingMode = ProcessingMode.Normal;
 		public List<Pattern> patterns = new List<Pattern>();
-		public bool isChangeChildren = true;
 		public bool isStopConvertOnError = true;
+		public bool isChangeChildren = true;
 		public bool isLeaveOldCameraCullingMask;
 
 		public bool IsEnabledLayerId {
@@ -66,8 +66,8 @@ namespace ConvertLayerId
 			return new ConvertData {
 				processingMode = this.processingMode,
 				patterns = this.patterns.Select(x => x.Clone()).ToList(),
-				isChangeChildren = this.isChangeChildren,
 				isStopConvertOnError = this.isStopConvertOnError,
+				isChangeChildren = this.isChangeChildren,
 				isLeaveOldCameraCullingMask = this.isLeaveOldCameraCullingMask
 			};
 		}

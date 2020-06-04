@@ -7,12 +7,14 @@ namespace ConvertLayerId
 {
 	public class LayerIdConverterPrefab : LayerIdConverterBase
 	{
-		public override string AssetType => "Prefab";
+		public LayerIdConverterPrefab() : base("Prefab") {}
 
-		public override void Execute(List<string> pathList, ConvertData convertSettings)
+		public override void Execute(ConvertData convertSettings)
 		{
+			base.Execute(convertSettings);
+
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
-			foreach (string path in pathList) {
+			foreach (string path in this.TargetPaths) {
 				string assetPath = path;
 				tasks.Add(new GeneralEditorIndicator.Task(
 					() => {
@@ -21,6 +23,7 @@ namespace ConvertLayerId
 						}
 						catch (Exception e) {
 							if (convertSettings.isStopConvertOnError) {
+								this.IsInterruption = true;
 								throw;
 							}
 							Debug.LogException(e);
@@ -30,7 +33,7 @@ namespace ConvertLayerId
 				));
 			}
 
-			GeneralEditorIndicator.Show("PrefabLayerIdConverter", tasks, () => {});
+			GeneralEditorIndicator.Show("LayerIdConverter - Prefab", tasks, () => { this.IsCompleted = true; });
 		}
 
 
@@ -62,7 +65,7 @@ namespace ConvertLayerId
 
 			if (results.Count > 0) {
 				Debug.Log(string.Format(
-					"[PrefabLayerIdConverter] {0}, Change Children = {1}\n{2}",
+					"[LayerIdConverter - Prefab] {0}, Change Children = {1}\n{2}",
 					assetPath,
 					convertSettings.isChangeChildren,
 					string.Join("\n", results)

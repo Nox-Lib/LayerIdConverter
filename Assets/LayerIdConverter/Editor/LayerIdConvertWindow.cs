@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -26,8 +27,6 @@ namespace ConvertLayerId
 
 		private Dictionary<int, string> layerDefines;
 		private int targetFlags;
-		private List<string> allPathList;
-		private List<string> targetPathList;
 		private string matchPattern;
 		private string matchPatternError;
 		private string ignorePattern;
@@ -154,6 +153,7 @@ namespace ConvertLayerId
 			EditorGUILayout.EndVertical();
 
 			bool isChangeTargets = beforeTargetFlags != this.targetFlags;
+
 			if (this.targetFlags <= 0) {
 				this.targetFlags = beforeTargetFlags;
 				this.Repaint();
@@ -196,17 +196,17 @@ namespace ConvertLayerId
 			GUILayout.Space(7f);
 			this.drawConvertPatterns.DoLayoutList();
 
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Stop Convert On Error", GUILayout.Width(175f));
+			this.convertSettings.isStopConvertOnError = EditorGUILayout.Toggle(this.convertSettings.isStopConvertOnError);
+			EditorGUILayout.EndHorizontal();
+
 			GUI.enabled = this.convertSettings.IsEnabledLayerId;
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Change Children", GUILayout.Width(175f));
 			this.convertSettings.isChangeChildren = EditorGUILayout.Toggle(this.convertSettings.isChangeChildren);
 			EditorGUILayout.EndHorizontal();
 			GUI.enabled = true;
-
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Stop Convert On Error", GUILayout.Width(175f));
-			this.convertSettings.isStopConvertOnError = EditorGUILayout.Toggle(this.convertSettings.isStopConvertOnError);
-			EditorGUILayout.EndHorizontal();
 
 			GUI.enabled = this.convertSettings.IsEnabledCameraCullingMask;
 			EditorGUILayout.BeginHorizontal();
@@ -223,14 +223,16 @@ namespace ConvertLayerId
 
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(5f);
-			GUILayout.Label(string.Format("Targets ({0}) :", this.targetPathList.Count));
+			GUILayout.Label(string.Format("Targets ({0}) :", this.converters.Sum(x => x.TargetPaths.Count)));
 			EditorGUILayout.EndVertical();
 
 			this.scrollPosition = EditorGUILayout.BeginScrollView(this.scrollPosition);
 			EditorGUILayout.BeginVertical();
 
-			foreach (string target in this.targetPathList) {
-				EditorGUILayout.SelectableLabel(target, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+			foreach (LayerIdConverterBase converter in this.converters) {
+				foreach (string target in converter.TargetPaths) {
+					EditorGUILayout.SelectableLabel(target, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+				}
 			}
 
 			EditorGUILayout.EndVertical();
@@ -249,47 +251,39 @@ namespace ConvertLayerId
 		{
 			if (isChangeTargets) {
 				this.converters = new List<LayerIdConverterBase>();
-				this.allPathList = new List<string>();
-
-				string[] searchInFolders = { "Assets" };
-
 				if ((this.targetFlags & TARGET_SCENE) >= 1) {
-					LayerIdConverterScene sceneConverter = new LayerIdConverterScene();
-					this.converters.Add(sceneConverter);
-					string filter = string.Format("t:{0}", sceneConverter.AssetType);
-					this.allPathList.AddRange(AssetDatabase.FindAssets(filter, searchInFolders).Select(AssetDatabase.GUIDToAssetPath));
+					this.converters.Add(new LayerIdConverterScene());
 				}
 				if ((this.targetFlags & TARGET_PREFAB) >= 1) {
-					LayerIdConverterPrefab prefabConverter = new LayerIdConverterPrefab();
-					this.converters.Add(prefabConverter);
-					string filter = string.Format("t:{0}", prefabConverter.AssetType);
-					this.allPathList.AddRange(AssetDatabase.FindAssets(filter, searchInFolders).Select(AssetDatabase.GUIDToAssetPath));
+					this.converters.Add(new LayerIdConverterPrefab());
 				}
 			}
-
-			this.targetPathList = new List<string>(this.allPathList);
 
 			this.matchPatternError = string.Empty;
 			if (!string.IsNullOrEmpty(this.matchPattern)) {
 				try {
 					Regex regex = new Regex(this.matchPattern);
-					this.targetPathList = this.targetPathList.Where(x => regex.IsMatch(x, 0)).ToList();
 				}
 				catch (Exception e) {
 					this.matchPatternError = e.Message;
-					this.targetPathList = new List<string>();
 				}
 			}
-
 			this.ignorePatternError = string.Empty;
 			if (!string.IsNullOrEmpty(this.ignorePattern)) {
 				try {
 					Regex regex = new Regex(this.ignorePattern);
-					this.targetPathList = this.targetPathList.Where(x => !regex.IsMatch(x, 0)).ToList();
 				}
 				catch (Exception e) {
 					this.ignorePatternError = e.Message;
 				}
+			}
+
+			bool isError = false;
+			isError |= !string.IsNullOrEmpty(this.matchPatternError);
+			isError |= !string.IsNullOrEmpty(this.ignorePatternError);
+
+			foreach (LayerIdConverterBase converter in this.converters) {
+				converter.Filter(this.matchPattern, this.ignorePattern, isError);
 			}
 		}
 
@@ -322,15 +316,29 @@ namespace ConvertLayerId
 
 			bool isExecute = EditorUtility.DisplayDialog(
 				"実行確認",
-				string.Format("{0}件を対象に処理を開始します。よろしいですか？", this.targetPathList.Count),
+				string.Format("{0}件を対象に処理を開始します。よろしいですか？", this.converters.Sum(x => x.TargetPaths.Count)),
 				"OK",
 				"Cancel"
 			);
+
 			if (isExecute) {
-				foreach (LayerIdConverterBase converter in this.converters) {
-					converter.Execute(new List<string>(this.targetPathList), this.convertSettings.Clone());
+				EditorCoroutine.Start(this.RunConvert());
+			}
+		}
+
+
+		private IEnumerator RunConvert()
+		{
+			foreach (LayerIdConverterBase converter in this.converters) {
+				converter.Execute(this.convertSettings.Clone());
+				while (!converter.IsCompleted) {
+					if (converter.IsInterruption) {
+						yield break;
+					}
+					yield return null;
 				}
 			}
 		}
+
 	}
 }

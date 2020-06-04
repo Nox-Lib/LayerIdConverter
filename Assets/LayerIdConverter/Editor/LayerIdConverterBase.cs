@@ -3,13 +3,49 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ConvertLayerId
 {
 	public abstract class LayerIdConverterBase
 	{
-		public abstract string AssetType { get; }
-		public abstract void Execute(List<string> pathList, ConvertData convertSettings);
+		protected List<string> allPathList = new List<string>();
+		protected List<string> targetPathList = new List<string>();
+
+		public bool IsCompleted { get; protected set; }
+		public bool IsInterruption { get; protected set; }
+		public List<string> TargetPaths { get { return this.targetPathList; } }
+
+		protected LayerIdConverterBase(string assetType)
+		{
+			string filter = string.Format("t:{0}", assetType);
+			string[] searchInFolders = { "Assets" };
+
+			this.allPathList = AssetDatabase.FindAssets(filter, searchInFolders)
+				.Select(AssetDatabase.GUIDToAssetPath)
+				.ToList();
+		}
+
+		public virtual void Execute(ConvertData convertSettings)
+		{
+			this.IsCompleted = this.IsInterruption = false;
+		}
+
+		public void Filter(string matchPattern, string ignorePattern, bool isError)
+		{
+			if (isError) {
+				this.targetPathList = new List<string>();
+				return;
+			}
+			this.targetPathList = new List<string>(this.allPathList);
+
+			if (!string.IsNullOrEmpty(matchPattern)) {
+				this.targetPathList = this.targetPathList.Where(x => Regex.IsMatch(x, matchPattern)).ToList();
+			}
+			if (!string.IsNullOrEmpty(ignorePattern)) {
+				this.targetPathList = this.targetPathList.Where(x => !Regex.IsMatch(x, ignorePattern)).ToList();
+			}
+		}
 
 		protected List<string> ChangeLayer(string layerName, GameObject gameObject, ConvertData convertSettings)
 		{
