@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ConvertLayerId
 {
-	public enum ProcessingMode : int {
+	public enum ProcessingMode {
 		Normal		= 0,
 		LayerIdOnly	= 1,
 		CameraOnly	= 2
