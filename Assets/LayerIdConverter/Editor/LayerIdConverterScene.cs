@@ -19,7 +19,7 @@ namespace ConvertLayerId
 			base.Execute(convertSettings);
 
 			EditorSceneManager.SaveOpenScenes();
-			this.currentScenePath = SceneManager.GetActiveScene().path;
+			this.currentScenePath = UnityEngine.SceneManagement.SceneManager.GetActiveScene().path;
 
 			List<GeneralEditorIndicator.Task> tasks = new List<GeneralEditorIndicator.Task>();
 			foreach (string path in this.TargetPaths) {
@@ -56,7 +56,7 @@ namespace ConvertLayerId
 		private void ChangeLayer(string assetPath, ConvertData convertSettings)
 		{
 			EditorSceneManager.OpenScene(assetPath);
-			Scene scene = SceneManager.GetSceneByPath(assetPath);
+			Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(assetPath);
 			List<GameObject> gameObjects = scene.GetRootGameObjects().ToList();
 			List<string> results = new List<string>();
 
